@@ -1,0 +1,299 @@
+import pygame
+pygame.init()
+import numpy as np
+import numpy.random as rand
+import time
+t=0
+sc = pygame.display.set_mode((600, 400))
+background_image = pygame.image.load('bg.bmp').convert()
+sc.blit(background_image, (0, 0))
+bg = pygame.image.load('bg.bmp')
+
+image_ship = pygame.image.load('кораблик2.png')
+image_ship = pygame.transform.scale(image_ship, (30, 30))
+
+image_main_ship = pygame.image.load('глкораблик.png')
+image_main_ship = pygame.transform.scale(image_main_ship, (32, 32))
+
+image_my_ship = pygame.image.load('мой.png')
+image_my_ship = pygame.transform.scale(image_my_ship, (30, 30))
+
+
+f2 = pygame.font.SysFont('serif', 48)
+clock = pygame.time.Clock()
+FPS = 50
+WHITE = (255,255,255)
+BLUE = (0,255,255)
+ORANGE = (255,200,0)
+GREEN = (100,200,200)
+rand = [1]
+for ii in range (0,20):
+    rand.append(0)
+    
+pygame.mixer.music.load('имперский марш.mp3')
+pygame.mixer.music.play()
+
+
+#restart
+x=300
+y=350 #координаты корабля
+balls = [] #список снарядов(координаты и активность)
+notballs = [] 
+yme = 18 #координата главного врага
+win=0
+r=15 #радиус
+lr=1
+timee=0
+score = 0
+
+enemy1 = [300, yme+35, 1]
+enemy2 = [360, yme+35, 1]
+enemy3 = [240, yme+35, 1]
+
+enemy4 = [300-120, yme+35, 1]
+enemy5 = [360-120, yme+35, 1]
+enemy6 = [240-120, yme+35, 1]
+
+enemy7 = [300+120, yme+35, 1]
+enemy8 = [360+120, yme+35, 1]
+enemy9 = [240+120, yme+35, 1]
+
+enemy10 = [300, yme+70, 1]
+enemy11 = [360, yme+70, 1]
+enemy12 = [240, yme+70, 1]
+
+enemy13 = [300-120, yme+70, 1]
+enemy14 = [360-120, yme+70, 1]
+enemy15 = [240-120, yme+70, 1]
+
+enemy16 = [300+120, yme+70, 1]
+enemy17 = [360+120, yme+70, 1]
+enemy18 = [240+120, yme+70, 1]
+
+enemy19 = [300, yme+105, 1]
+enemy20 = [360, yme+105, 1]
+enemy21 = [240, yme+105, 1]
+
+enemy22 = [300-120, yme+105, 1]
+enemy23 = [360-120, yme+105, 1]
+enemy24 = [240-120, yme+105, 1]
+
+enemy25 = [300+120, yme+105, 1]
+enemy26 = [360+120, yme+105, 1]
+enemy27 = [240+120, yme+105, 1]
+
+main_enemy = [300, yme, 1]
+enemies = [enemy1, enemy2, enemy3, enemy4, enemy5, enemy6, enemy7, enemy8, enemy9,
+            enemy10, enemy11, enemy12, enemy13, enemy14, enemy15, enemy16, enemy17, enemy18,
+            enemy19, enemy20, enemy21, enemy22, enemy23, enemy24, enemy25, enemy26, enemy27, main_enemy] #список врагов
+    
+#end restart
+
+
+def draw_my_ship(x,y):
+    #pygame.draw.circle(sc, WHITE, (x, y), r)
+    sc.blit(image_my_ship,(x-15, y-15))
+def draw_main_enemy(yme):
+    if main_enemy[2]==1:
+        #pygame.draw.circle(sc, GREEN, (int(enemies[27][0]), int(yme)), 17)
+        sc.blit(image_main_ship,(int(enemies[27][0])-16, int(yme)-16))
+def draw_enemy(enemy):
+    if enemy[2]==1:
+        #pygame.draw.circle(sc, ORANGE, (int(enemy[0]), int(enemy[1])), r)
+        sc.blit(image_ship,(int(enemy[0])-15, int(enemy[1])-15))
+def draw_enemies(yme):
+    for enemy in enemies:
+        if enemy==main_enemy:
+            draw_main_enemy(yme)
+        else:
+            draw_enemy(enemy)
+def is_ball_kill_enemy(x,y,enemy):
+    if enemy[0]-r <= x and x <= enemy[0]+r and y <= enemy[1]+r and y >= enemy[1]-r and enemy[2]==1:
+        return(True)
+    else:
+        return(False)
+def is_notball_kill_me(x, notball):
+    if notball[0] >= x-r and notball[0] <= x+r and notball[1] >= 350-15 and notball[1] <= 350+15 and win==0:
+        return(True)
+    else:
+        return(False)
+    
+
+while True:
+    clock.tick(FPS)
+    sc.blit(background_image, (0, 0))
+    
+    if win==0 or win==0.5:
+        draw_my_ship(x,y)
+        draw_main_enemy(int(yme))
+        draw_enemies(int(yme))
+    
+    if balls!=[] and (win==0 or win==0.5) :
+        for ball in balls:
+            if ball[2]==1: #если мяч активен
+                if win==0: ball[1]-=2 #движиние
+                pygame.draw.circle(sc, GREEN, (ball[0], ball[1]), 5)
+                for enemy in enemies:
+                    if is_ball_kill_enemy(ball[0],ball[1],enemy) == True:
+                        enemy[2]=0
+                        ball[2]=0
+                        score+=10
+                        if enemy == main_enemy:
+                            win = 1
+    if notballs!=[] and (win==0 or win==0.5):
+        for notball in notballs:
+            if notball[2]==1: #если антимяч активен
+                if win==0: notball[1]+=4 #движение
+                pygame.draw.circle(sc, GREEN, (int(notball[0]), int(notball[1])), 5)
+                if is_notball_kill_me(x,notball)==True:
+                    win = -1
+    for enemy in enemies:
+        if enemy[2]==1 and enemy[1]>=350:
+            win=-1
+        
+    #выпуск антиснаряда:
+    if win==0:
+        i=np.random.randint(0,len(rand))
+        ii = rand[i]
+        if ii==1:
+            i=np.random.randint(0,len(enemies))
+            if enemies[i][2]==1:
+                notballs.append([enemies[i][0],enemies[i][1],1])
+    
+    for i in pygame.event.get():
+        if i.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+            
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and win==0:
+        x -= 2
+    elif keys[pygame.K_RIGHT] and win==0:
+        x += 2
+    if keys[pygame.K_UP] and controler==0 and timee>=2500 and win==0:
+        balls.append([x,y,1])
+        timee=0
+        controler = 1     #контролер следит чтобы кнопка вверх отпускалась перед запуском нового снаряда
+    if keys[pygame.K_UP]==0:
+        controler = 0   
+    
+    if keys[pygame.K_p]==1 and win==0 and t==0:
+        win = 0.5
+        t=1
+        pygame.mixer.music.pause()
+    if keys[pygame.K_p]==0:
+            t=0
+    if keys[pygame.K_p]==1 and win==0.5 and t==0:
+        win = 0
+        t=1
+        pygame.mixer.music.unpause()
+        
+    if keys[pygame.K_SPACE]:
+        pygame.mixer.music.play()
+        ############################################################## restart ################
+        #sc.fill((100, 150, 200))
+        sc.blit(background_image, (0, 0))
+        sc.blit(bg,(600, 400))
+        pygame.display.update()
+        x=300
+        y=350 #координаты корабля
+        balls = [] #список снарядов(координаты и активность)
+        notballs = []
+        yme = 18 #координата главного врага
+        win=0
+        r=15 #радиус
+        lr=1
+        time=0
+        score = 0
+ 
+        enemy1 = [300, yme+35, 1]
+        enemy2 = [360, yme+35, 1]
+        enemy3 = [240, yme+35, 1]
+
+        enemy4 = [300-120, yme+35, 1]
+        enemy5 = [360-120, yme+35, 1]
+        enemy6 = [240-120, yme+35, 1]
+
+        enemy7 = [300+120, yme+35, 1]
+        enemy8 = [360+120, yme+35, 1]
+        enemy9 = [240+120, yme+35, 1]
+
+        enemy10 = [300, yme+70, 1]
+        enemy11 = [360, yme+70, 1]
+        enemy12 = [240, yme+70, 1]
+
+        enemy13 = [300-120, yme+70, 1]
+        enemy14 = [360-120, yme+70, 1]
+        enemy15 = [240-120, yme+70, 1]
+
+        enemy16 = [300+120, yme+70, 1]
+        enemy17 = [360+120, yme+70, 1]
+        enemy18 = [240+120, yme+70, 1]
+
+        enemy19 = [300, yme+105, 1]
+        enemy20 = [360, yme+105, 1]
+        enemy21 = [240, yme+105, 1]
+
+        enemy22 = [300-120, yme+105, 1]
+        enemy23 = [360-120, yme+105, 1]
+        enemy24 = [240-120, yme+105, 1]
+
+        enemy25 = [300+120, yme+105, 1]
+        enemy26 = [360+120, yme+105, 1]
+        enemy27 = [240+120, yme+105, 1]
+
+        main_enemy = [300, yme, 1]
+        enemies = [enemy1, enemy2, enemy3, enemy4, enemy5, enemy6, enemy7, enemy8, enemy9,
+                   enemy10, enemy11, enemy12, enemy13, enemy14, enemy15, enemy16, enemy17, enemy18,
+                   enemy19, enemy20, enemy21, enemy22, enemy23, enemy24, enemy25, enemy26, enemy27, main_enemy]
+       
+
+        ####################################################################### end restart ###############
+        
+    if win==0:
+        for enemy in enemies:
+            enemy[1]+=0.15
+            if lr==1:
+                enemy[0]+=0.2
+                if enemies[27][0]>360:
+                    lr=-1
+            else:
+                enemy[0]-=0.2
+                if enemies[27][0]<240:
+                    lr=1
+        yme+=0.15
+        timee+=50
+
+    if yme+45>=y and win==0:
+        win = -1
+        
+    if win == -1:
+        text1 = f2.render('TRY AGAIN', 1, (180, 0, 0))
+        sc.blit(text1, (10, 50))
+        pygame.mixer.music.stop()
+
+    if win == 1:
+        pygame.mixer.music.stop()
+        for enemy in enemies:
+            enemy[2]=0
+        text2 = f2.render('WIN', 1, (180, 0, 0))
+        sc.blit(text2, (10, 50))
+        text3 = f2.render('YOUR SCORE: '+str(score), 1, (180, 0, 0))
+        sc.blit(text3, (10, 90))
+    pygame.display.update()
+
+    
+    
+ 
+    # -------1280 720
+
+
+
+
+
+
+
+
+
+
+    
